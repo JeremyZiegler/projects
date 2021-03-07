@@ -1,0 +1,13 @@
+clc; clear all; close all;
+
+%initialize known variables
+E = 1.9e11;
+v = 0.285;
+t = 0.0002:0.00001:0.001;
+D = E*t.^3/(12*(1-v^2));
+r = .072/2;
+k = 16*pi.*D/(r^2); %calculate spring constant
+
+%plot spring constant vs thickness to find thickness for a given k
+figure
+plot(t, k); xlabel('Thickness'); ylabel('Spring constant');
