@@ -1,0 +1,109 @@
+close all;
+load myRecording1_5;
+
+%% test recording
+%  playObj = audioplayer(myRecording1_4,Fs,Nbits,outputdev);
+%  play(playObj);
+
+
+N = length(myRecording1_5);
+X = fft(myRecording1_5, N);
+l = 0:1:N-1;
+fs = 8000;
+f = -fs/2:fs/(N-1):fs/2
+
+L = 100;
+M = L/2;
+Z = 2*M+1;
+n = 0:1:Z-1;
+fc2 = 300;
+fc1 = 290;
+
+%create bandpass filter from 2 lowpass filters
+h_d_LPF1=2*fc1/Fs*sinc(2*fc1/Fs*(n-M));
+h_d_LPF2=2*fc2/Fs*sinc(2*fc2/Fs*(n-M));
+H1 = fft(h_d_LPF1, N);
+H2 = fft(h_d_LPF2, N);
+freq = [-(N-2)/2:1:N/2]*8000/N;
+
+h_d_LPF_total = h_d_LPF1 - h_d_LPF2;
+
+figure
+plot(freq, fftshift(abs(H1)));
+
+%frequency response of the filters
+hold on
+plot(freq, fftshift(10*log10(abs(H1))), 'g');
+xlabel('Frequency')
+title('Frequency Response of LPF1')
+plot(freq, fftshift(10*log10(abs(H2))), 'r');
+xlabel('Frequency')
+title('Frequency Response of LPF2')
+plot(freq, fftshift(10*log10(abs(H1 - H2))), 'b');
+xlabel('Frequency')
+title('Frequency Response of BPF')
+legend('LPF1', 'LPF2', 'BPF')
+hold off
+
+X_shift = fftshift(X);
+X_amp = abs(X_shift);
+theta = unwrap(angle(X));
+theta_shift = fftshift(theta);
+
+%%Tuning fork frequency plot
+figure 
+plot(f, X_amp);
+
+%%Phase spectrum
+figure 
+plot(f, theta_shift);
+xlabel('Frequency (Hz)'),
+ylabel('Phase');
+
+%create white noise to filter out
+x_noise = myRecording1_5' + 0.1*randn(1,N);
+X_noise = fft(x_noise, N);
+X_norm = X_noise/N;
+figure 
+plot(freq, fftshift(abs(X_noise)));
+xlabel('Frequency')
+ylabel('Amplitude')
+title('Noisy Signal')
+
+%create window filter to filter white noise
+w= 1/2*(1-cos(2*pi*(n)/(Z-1)));
+h_d_window_LPF=h_d_LPF_total.*w;
+H=fft(h_d_window_LPF,N);
+A = h_d_window_LPF;
+y = conv(A, x_noise);
+Y = fft(y, N);
+
+hold on
+figure
+plot(freq, fftshift(abs(Y)), 'b')
+xlabel('Frequency')
+ylabel('Amplitude')
+title('Filtered signal')
+
+% pause
+%  playObj1 = audioplayer(x_noise,Fs,16);
+%  play(playObj1);
+
+% pause
+ playObj = audioplayer(10*y,Fs,16);
+ play(playObj);
+
+%%Power Spectrum
+power1 = (1/(fs*N))*fftshift(abs(X_noise));
+figure
+plot(freq, 10*log10(power1))
+xlabel('Frequency')
+ylabel('Power (dB)')
+title('Power spectrum in dB of Noisy Signal')
+
+power2 = (1/(fs*N))*fftshift(abs(Y));
+figure
+plot(freq, 10*log10(power2))
+xlabel('Frequency')
+ylabel('Power (dB)')
+title('Power spectrum in dB of Filtered Signal')
