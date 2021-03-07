@@ -1,0 +1,67 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(2, 3, 4, 5, 9, 10);
+
+//intialize variables
+int one = 8; //map poles to Arduino pins for clarity
+int two = 7;
+int three = 13;
+int four = 12;
+int motor = 1;
+int pot;
+int del;
+float rpm;
+
+//setup Arduino pins
+void setup() {
+  pinMode(8, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
+  lcd.begin(16, 2);
+  
+
+}
+
+void loop() {
+
+  pot = analogRead(A5); //read pot value for rpm calculation
+  del = map(pot, 0, 1023, 150, 10); //map pot value to a delay value
+  
+  //code for one rotation of the rotor
+  digitalWrite(one, HIGH);
+  digitalWrite(two, LOW);
+  digitalWrite(three, LOW);
+  digitalWrite(four, LOW);
+  delay(del);
+  
+  digitalWrite(one, LOW);
+  digitalWrite(two, LOW);
+  digitalWrite(three, LOW);
+  digitalWrite(four, HIGH);
+  delay(del);
+  
+  digitalWrite(one, LOW);
+  digitalWrite(two, HIGH);
+  digitalWrite(three, LOW);
+  digitalWrite(four, LOW);
+  delay(del);
+  
+  digitalWrite(one, LOW);
+  digitalWrite(two, LOW);
+  digitalWrite(three, HIGH);
+  digitalWrite(four, LOW);
+  delay(del);
+
+  //update lcd with current rpm
+  rpm = 60000/(4*del);
+  lcd.setCursor(4, 0);
+  lcd.print("Group 27");
+  lcd.setCursor(2, 1);
+  lcd.print("RPM = ");
+  lcd.print(rpm);
+  
+  
+  
+
+}
